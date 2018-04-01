@@ -13,7 +13,7 @@ message TaskList {
 
 message Void {}
 
-service Tasks {
+service Todo {
     rpc List(TaskList) returns(Void) {}
     rpc Add(Task) returns(Void) {}
 }

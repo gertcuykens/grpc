@@ -96,97 +96,97 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for Tasks service
+// Client API for Todo service
 
-type TasksClient interface {
+type TodoClient interface {
 	List(ctx context.Context, in *TaskList, opts ...grpc.CallOption) (*Void, error)
 	Add(ctx context.Context, in *Task, opts ...grpc.CallOption) (*Void, error)
 }
 
-type tasksClient struct {
+type todoClient struct {
 	cc *grpc.ClientConn
 }
 
-func NewTasksClient(cc *grpc.ClientConn) TasksClient {
-	return &tasksClient{cc}
+func NewTodoClient(cc *grpc.ClientConn) TodoClient {
+	return &todoClient{cc}
 }
 
-func (c *tasksClient) List(ctx context.Context, in *TaskList, opts ...grpc.CallOption) (*Void, error) {
+func (c *todoClient) List(ctx context.Context, in *TaskList, opts ...grpc.CallOption) (*Void, error) {
 	out := new(Void)
-	err := grpc.Invoke(ctx, "/main.Tasks/List", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/main.Todo/List", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *tasksClient) Add(ctx context.Context, in *Task, opts ...grpc.CallOption) (*Void, error) {
+func (c *todoClient) Add(ctx context.Context, in *Task, opts ...grpc.CallOption) (*Void, error) {
 	out := new(Void)
-	err := grpc.Invoke(ctx, "/main.Tasks/Add", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/main.Todo/Add", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// Server API for Tasks service
+// Server API for Todo service
 
-type TasksServer interface {
+type TodoServer interface {
 	List(context.Context, *TaskList) (*Void, error)
 	Add(context.Context, *Task) (*Void, error)
 }
 
-func RegisterTasksServer(s *grpc.Server, srv TasksServer) {
-	s.RegisterService(&_Tasks_serviceDesc, srv)
+func RegisterTodoServer(s *grpc.Server, srv TodoServer) {
+	s.RegisterService(&_Todo_serviceDesc, srv)
 }
 
-func _Tasks_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Todo_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TaskList)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TasksServer).List(ctx, in)
+		return srv.(TodoServer).List(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/main.Tasks/List",
+		FullMethod: "/main.Todo/List",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TasksServer).List(ctx, req.(*TaskList))
+		return srv.(TodoServer).List(ctx, req.(*TaskList))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Tasks_Add_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Todo_Add_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Task)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TasksServer).Add(ctx, in)
+		return srv.(TodoServer).Add(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/main.Tasks/Add",
+		FullMethod: "/main.Todo/Add",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TasksServer).Add(ctx, req.(*Task))
+		return srv.(TodoServer).Add(ctx, req.(*Task))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Tasks_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "main.Tasks",
-	HandlerType: (*TasksServer)(nil),
+var _Todo_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "main.Todo",
+	HandlerType: (*TodoServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "List",
-			Handler:    _Tasks_List_Handler,
+			Handler:    _Todo_List_Handler,
 		},
 		{
 			MethodName: "Add",
-			Handler:    _Tasks_Add_Handler,
+			Handler:    _Todo_Add_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -196,16 +196,16 @@ var _Tasks_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("task.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 166 bytes of a gzipped FileDescriptorProto
+	// 167 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2a, 0x49, 0x2c, 0xce,
 	0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0xc9, 0x4d, 0xcc, 0xcc, 0x53, 0xd2, 0xe3, 0x62,
 	0x09, 0x49, 0x2c, 0xce, 0x16, 0x12, 0xe2, 0x62, 0x29, 0x49, 0xad, 0x28, 0x91, 0x60, 0x54, 0x60,
 	0xd4, 0xe0, 0x0c, 0x02, 0xb3, 0x41, 0x62, 0x29, 0xf9, 0x79, 0xa9, 0x12, 0x4c, 0x0a, 0x8c, 0x1a,
 	0x1c, 0x41, 0x60, 0xb6, 0x92, 0x0e, 0x17, 0x07, 0x48, 0xbd, 0x4f, 0x66, 0x71, 0x89, 0x90, 0x02,
 	0x17, 0x2b, 0xc8, 0xbc, 0x62, 0x09, 0x46, 0x05, 0x66, 0x0d, 0x6e, 0x23, 0x2e, 0x3d, 0x90, 0x89,
-	0x7a, 0x20, 0xe9, 0x20, 0x88, 0x84, 0x12, 0x1b, 0x17, 0x4b, 0x58, 0x7e, 0x66, 0x8a, 0x91, 0x1f,
-	0x17, 0x2b, 0x48, 0xb8, 0x58, 0x48, 0x85, 0x8b, 0x05, 0xac, 0x95, 0x0f, 0xa1, 0x16, 0xc4, 0x97,
-	0x82, 0xea, 0x05, 0x29, 0x56, 0x62, 0x10, 0x92, 0xe7, 0x62, 0x76, 0x4c, 0x49, 0x11, 0x42, 0x32,
-	0x10, 0x55, 0x41, 0x12, 0x1b, 0xd8, 0x0b, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0xae, 0x6f,
-	0x89, 0x0d, 0xd0, 0x00, 0x00, 0x00,
+	0x7a, 0x20, 0xe9, 0x20, 0x88, 0x84, 0x12, 0x1b, 0x17, 0x4b, 0x58, 0x7e, 0x66, 0x8a, 0x91, 0x2f,
+	0x17, 0x4b, 0x48, 0x7e, 0x4a, 0xbe, 0x90, 0x0a, 0x17, 0x0b, 0x58, 0x27, 0x1f, 0x42, 0x29, 0x88,
+	0x2f, 0x05, 0xd5, 0x0a, 0x52, 0xab, 0xc4, 0x20, 0x24, 0xcf, 0xc5, 0xec, 0x98, 0x92, 0x22, 0x84,
+	0x64, 0x1e, 0xaa, 0x82, 0x24, 0x36, 0xb0, 0x0f, 0x8c, 0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x76,
+	0x5a, 0xe4, 0x70, 0xcf, 0x00, 0x00, 0x00,
 }

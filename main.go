@@ -19,11 +19,9 @@ import (
 
 const U64 = int(unsafe.Sizeof(uint64(0)))
 
-type taskServer struct{}
-
-func Listen(server *taskServer) {
+func Listen(server TodoServer) {
 	srv := grpc.NewServer()
-	RegisterTasksServer(srv, server)
+	RegisterTodoServer(srv, server)
 	l, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatalf("could not listen to :8080 %s", err)
@@ -31,27 +29,28 @@ func Listen(server *taskServer) {
 	log.Fatal(srv.Serve(l))
 }
 
-func Client() TasksClient {
+func Client() TodoClient {
 	conn, err := grpc.Dial(":8080", grpc.WithInsecure())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "could not connect to backend: %s\n", err)
 		os.Exit(1)
 	}
-	return NewTasksClient(conn)
+	return NewTodoClient(conn)
 }
 
-func (taskServer) Add(ctx context.Context, t *Task) (*Void, error) {
+type Todo struct{}
+
+func (Todo) Add(ctx context.Context, t *Task) (*Void, error) {
 	return &Void{}, add(t)
 }
 
-func (taskServer) List(ctx context.Context, l *TaskList) (*Void, error) {
+func (Todo) List(ctx context.Context, l *TaskList) (*Void, error) {
 	return &Void{}, list(l)
 }
 
 //go:generate protoc -I . task.proto --go_out=plugins=grpc:.
 func main() {
-	server := taskServer{}
-	go Listen(&server)
+	go Listen(&Todo{})
 	client := Client()
 
 	var l TaskList
