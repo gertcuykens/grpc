@@ -21,10 +21,9 @@ const U64 = int(unsafe.Sizeof(uint64(0)))
 
 type taskServer struct{}
 
-func (taskServer) Listen() {
+func Listen(server *taskServer) {
 	srv := grpc.NewServer()
-	var tasks TasksServer
-	RegisterTasksServer(srv, tasks)
+	RegisterTasksServer(srv, server)
 	l, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatalf("could not listen to :8080 %s", err)
@@ -32,7 +31,7 @@ func (taskServer) Listen() {
 	log.Fatal(srv.Serve(l))
 }
 
-func (taskServer) Client() TasksClient {
+func Client() TasksClient {
 	conn, err := grpc.Dial(":8080", grpc.WithInsecure())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "could not connect to backend: %s\n", err)
@@ -52,8 +51,8 @@ func (taskServer) List(ctx context.Context, l *TaskList) (*Void, error) {
 //go:generate protoc -I . task.proto --go_out=plugins=grpc:.
 func main() {
 	server := taskServer{}
-	go server.Listen()
-	client := server.Client()
+	go Listen(&server)
+	client := Client()
 
 	var l TaskList
 	for true {
