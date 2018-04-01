@@ -41,11 +41,11 @@ func Client() TasksClient {
 }
 
 func (taskServer) Add(ctx context.Context, t *Task) (*Void, error) {
-	return nil, add(t)
+	return &Void{}, add(t)
 }
 
 func (taskServer) List(ctx context.Context, l *TaskList) (*Void, error) {
-	return nil, list(l)
+	return &Void{}, list(l)
 }
 
 //go:generate protoc -I . task.proto --go_out=plugins=grpc:.
@@ -79,7 +79,7 @@ func main() {
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			} else {
-				fmt.Fprintf(os.Stderr, "unknown subcommand %s (list/add/exit)", cmd)
+				fmt.Fprintf(os.Stderr, "unknown subcommand %s (list/add/exit)\n", cmd)
 			}
 		}
 	}
