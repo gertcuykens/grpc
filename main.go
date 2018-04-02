@@ -75,7 +75,7 @@ func main() {
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			} else {
-				fmt.Fprintf(os.Stderr, "unknown subcommand %s (list/add/exit)\n", cmd)
+				fmt.Fprint(os.Stderr, "unknown subcommand use (list/add/exit)\n")
 			}
 		}
 	}
