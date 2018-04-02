@@ -59,19 +59,16 @@ func main() {
 		reader := bufio.NewReader(os.Stdin)
 		switch cmd, err := reader.ReadString('\n'); {
 		case strings.HasPrefix(cmd, "list"):
-			// tasks, err = list()
 			tasks, err = client.List(context.Background(), &Void{})
-			print(tasks)
+			echo(tasks)
 		case strings.HasPrefix(cmd, "add "):
 			task := Task{
 				Text: cmd[4 : len(cmd)-1],
 				Done: false,
 			}
-			// err = add(&task)
-			// tasks, err = list()
 			_, err = client.Add(context.Background(), &task)
 			tasks, err = client.List(context.Background(), &Void{})
-			print(tasks)
+			echo(tasks)
 		case strings.HasPrefix(cmd, "exit"):
 			os.Exit(0)
 		default:
@@ -141,7 +138,7 @@ func list() (*TaskList, error) {
 	return &tasks, err
 }
 
-func print(l *TaskList) {
+func echo(l *TaskList) {
 	if l == nil {
 		fmt.Println("🤬")
 		return
