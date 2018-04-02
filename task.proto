@@ -1,6 +1,7 @@
+//go:generate protoc -I . task.proto --go_out=plugins=grpc:.
 syntax = "proto3";
 
-package main;
+package grpc;
 
 message Task {
     string text = 1;
