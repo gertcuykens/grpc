@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	gc "github.com/gertcuykens/grpc"
-	gcmock "github.com/gertcuykens/grpc/mock_grpc"
+	pb "github.com/gertcuykens/grpc"
+	pbmock "github.com/gertcuykens/grpc/mock_grpc"
 	"github.com/golang/mock/gomock"
 	"golang.org/x/net/context"
 )
@@ -13,17 +13,17 @@ import (
 func TestAddTask(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockTodoClient := gcmock.NewMockTodoClient(ctrl)
-	req := &gc.Task{Text: "mock_test", Done: false}
+	mockTodoClient := pbmock.NewMockTodoClient(ctrl)
+	req := &pb.Task{Text: "mock_test", Done: false}
 	mockTodoClient.EXPECT().Add(
 		gomock.Any(),
-		&gcmock.Msg{M: req},
-	).Return(&gc.Void{}, nil)
+		&pbmock.Msg{M: req},
+	).Return(&pb.Void{}, nil)
 
-	test := func(t *testing.T, client gc.TodoClient) {
+	test := func(t *testing.T, client pb.TodoClient) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
-		_, err := client.Add(ctx, &gc.Task{Text: "mock_test", Done: false})
+		_, err := client.Add(ctx, &pb.Task{Text: "mock_test", Done: false})
 		if err != nil {
 			t.Error(err)
 		}
@@ -35,19 +35,19 @@ func TestAddTask(t *testing.T) {
 func TestList(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockTodoClient := gcmock.NewMockTodoClient(ctrl)
-	req := &gc.Void{}
+	mockTodoClient := pbmock.NewMockTodoClient(ctrl)
+	req := &pb.Void{}
 	mockTodoClient.EXPECT().List(
 		gomock.Any(),
-		&gcmock.Msg{M: req},
-	).Return(&gc.TaskList{
-		Tasks: []*gc.Task{&gc.Task{Text: "mock_test", Done: false}},
+		&pbmock.Msg{M: req},
+	).Return(&pb.TaskList{
+		Tasks: []*pb.Task{&pb.Task{Text: "mock_test", Done: false}},
 	}, nil)
 
-	test := func(t *testing.T, client gc.TodoClient) {
+	test := func(t *testing.T, client pb.TodoClient) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
-		r, err := client.List(ctx, &gc.Void{})
+		r, err := client.List(ctx, &pb.Void{})
 		if err != nil {
 			t.Error(err)
 		}

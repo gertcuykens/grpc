@@ -13,16 +13,16 @@ import (
 	"strings"
 	"unsafe"
 
-	gc "github.com/gertcuykens/grpc"
+	pb "github.com/gertcuykens/grpc"
 	"github.com/gogo/protobuf/proto"
 	"google.golang.org/grpc"
 )
 
 const U64 = int(unsafe.Sizeof(uint64(0)))
 
-func Listen(server gc.TodoServer) {
+func Listen(server pb.TodoServer) {
 	srv := grpc.NewServer()
-	gc.RegisterTodoServer(srv, server)
+	pb.RegisterTodoServer(srv, server)
 	l, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatalf("could not listen to :8080 %s", err)
@@ -30,44 +30,46 @@ func Listen(server gc.TodoServer) {
 	log.Fatal(srv.Serve(l))
 }
 
-func Client() gc.TodoClient {
+func Client() pb.TodoClient {
 	conn, err := grpc.Dial(":8080", grpc.WithInsecure())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "could not connect to backend: %s\n", err)
 		os.Exit(1)
 	}
-	return gc.NewTodoClient(conn)
+	return pb.NewTodoClient(conn)
 }
 
 type Todo struct{}
 
-func (Todo) Add(ctx context.Context, t *gc.Task) (*gc.Void, error) {
-	return &gc.Void{}, add(t)
+func (Todo) Add(ctx context.Context, t *pb.Task) (*pb.Void, error) {
+	return &pb.Void{}, add(t)
 }
 
-func (Todo) List(ctx context.Context, v *gc.Void) (*gc.TaskList, error) {
+func (Todo) List(ctx context.Context, v *pb.Void) (*pb.TaskList, error) {
 	return list()
 }
 
+//go:generate protoc -I ../../ ../../grpc.proto --go_out=plugins=grpc:../../
+//go:generate mockgen -destination ../../mock_grpc/grpc.go github.com/gertcuykens/grpc TodoServer,TodoClient
 func main() {
 	go Listen(&Todo{})
 	client := Client()
 
-	var tasks *gc.TaskList
+	var tasks *pb.TaskList
 	for true {
 		fmt.Print("cmd: ")
 		reader := bufio.NewReader(os.Stdin)
 		switch cmd, err := reader.ReadString('\n'); {
 		case strings.HasPrefix(cmd, "list"):
-			tasks, err = client.List(context.Background(), &gc.Void{})
+			tasks, err = client.List(context.Background(), &pb.Void{})
 			echo(tasks)
 		case strings.HasPrefix(cmd, "add "):
-			task := gc.Task{
+			task := pb.Task{
 				Text: cmd[4 : len(cmd)-1],
 				Done: false,
 			}
 			_, err = client.Add(context.Background(), &task)
-			tasks, err = client.List(context.Background(), &gc.Void{})
+			tasks, err = client.List(context.Background(), &pb.Void{})
 			echo(tasks)
 		case strings.HasPrefix(cmd, "exit"):
 			os.Exit(0)
@@ -82,7 +84,7 @@ func main() {
 
 }
 
-func add(task *gc.Task) error {
+func add(task *pb.Task) error {
 	b, err := proto.Marshal(task)
 	if err != nil {
 		return fmt.Errorf("could not encode task: %v", err)
@@ -107,13 +109,13 @@ func add(task *gc.Task) error {
 	return nil
 }
 
-func list() (*gc.TaskList, error) {
+func list() (*pb.TaskList, error) {
 	b, err := ioutil.ReadFile("data")
 	if err != nil {
 		return nil, fmt.Errorf("could not read: %s", err)
 	}
 
-	var tasks gc.TaskList
+	var tasks pb.TaskList
 	for {
 		if len(b) == 0 {
 			break
@@ -127,7 +129,7 @@ func list() (*gc.TaskList, error) {
 		}
 		b = b[U64:]
 
-		var task gc.Task
+		var task pb.Task
 		if err := proto.Unmarshal(b[:l], &task); err != nil {
 			return nil, fmt.Errorf("could not read task: %v", err)
 		}
@@ -138,7 +140,7 @@ func list() (*gc.TaskList, error) {
 	return &tasks, err
 }
 
-func echo(l *gc.TaskList) {
+func echo(l *pb.TaskList) {
 	if l == nil {
 		fmt.Println("🤬")
 		return

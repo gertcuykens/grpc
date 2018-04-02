@@ -3,11 +3,11 @@ package main
 import (
 	"testing"
 
-	gc "github.com/gertcuykens/grpc"
+	pb "github.com/gertcuykens/grpc"
 )
 
 func TestTask(t *testing.T) {
-	task := gc.Task{
+	task := pb.Task{
 		Text: "test",
 		Done: false,
 	}
