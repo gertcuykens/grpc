@@ -44,8 +44,8 @@ func (Todo) Add(ctx context.Context, t *Task) (*Void, error) {
 	return &Void{}, add(t)
 }
 
-func (Todo) List(ctx context.Context, l *TaskList) (*Void, error) {
-	return &Void{}, list(l)
+func (Todo) List(ctx context.Context, v *Void) (*TaskList, error) {
+	return list()
 }
 
 //go:generate protoc -I . task.proto --go_out=plugins=grpc:.
@@ -53,25 +53,25 @@ func main() {
 	go Listen(&Todo{})
 	client := Client()
 
-	var l TaskList
+	var tasks *TaskList
 	for true {
 		fmt.Print("cmd: ")
 		reader := bufio.NewReader(os.Stdin)
 		switch cmd, err := reader.ReadString('\n'); {
 		case strings.HasPrefix(cmd, "list"):
-			// err = list(&l)
-			_, err = client.List(context.Background(), &l)
-			print(&l)
+			// tasks, err = list()
+			tasks, err = client.List(context.Background(), &Void{})
+			print(tasks)
 		case strings.HasPrefix(cmd, "add "):
 			task := Task{
 				Text: cmd[4 : len(cmd)-1],
 				Done: false,
 			}
 			// err = add(&task)
-			// err = list(&l)
+			// tasks, err = list()
 			_, err = client.Add(context.Background(), &task)
-			_, err = client.List(context.Background(), &l)
-			print(&l)
+			tasks, err = client.List(context.Background(), &Void{})
+			print(tasks)
 		case strings.HasPrefix(cmd, "exit"):
 			os.Exit(0)
 		default:
@@ -110,33 +110,35 @@ func add(task *Task) error {
 	return nil
 }
 
-func list(tasks *TaskList) error {
+func list() (*TaskList, error) {
 	b, err := ioutil.ReadFile("data")
 	if err != nil {
-		return fmt.Errorf("could not read: %s", err)
+		return nil, fmt.Errorf("could not read: %s", err)
 	}
+
+	var tasks TaskList
 	for {
 		if len(b) == 0 {
-			return nil
+			break
 		} else if len(b) < U64 {
-			return fmt.Errorf("remaining odd %d bytes, what to do?", len(b))
+			return nil, fmt.Errorf("remaining odd %d bytes, what to do?", len(b))
 		}
 
 		var l uint64
 		if err := binary.Read(bytes.NewReader(b[:U64]), binary.LittleEndian, &l); err != nil {
-			return fmt.Errorf("could not decode message length: %v", err)
+			return nil, fmt.Errorf("could not decode message length: %v", err)
 		}
 		b = b[U64:]
 
 		var task Task
 		if err := proto.Unmarshal(b[:l], &task); err != nil {
-			return fmt.Errorf("could not read task: %v", err)
+			return nil, fmt.Errorf("could not read task: %v", err)
 		}
 		b = b[l:]
 
 		tasks.Tasks = append(tasks.Tasks, &task)
 	}
-	return err
+	return &tasks, err
 }
 
 func print(l *TaskList) {
