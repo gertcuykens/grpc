@@ -31,7 +31,7 @@ func Listen(server pb.RouteGuideServer) {
 	log.Fatal(srv.Serve(l))
 }
 
-func Client() pb.RouteGuideClient {
+func Client() (pb.RouteGuideClient, *grpc.ClientConn) {
 	creds, err := credentials.NewClientTLSFromFile(tls.Path("ca.pem"), "localhost")
 	if err != nil {
 		log.Fatalf("Failed to generate credentials %s", err)
@@ -41,7 +41,7 @@ func Client() pb.RouteGuideClient {
 		fmt.Fprintf(os.Stderr, "could not connect to backend: %s\n", err)
 		os.Exit(1)
 	}
-	return pb.NewRouteGuideClient(conn)
+	return pb.NewRouteGuideClient(conn), conn
 }
 
 type server struct {
@@ -75,8 +75,8 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 //go:generate mockgen -destination ../../mock_grpc/rg.go github.com/gertcuykens/grpc RouteGuideClient,RouteGuide_RouteChatClient
 func main() {
 	go Listen(newServer())
-	client := Client()
-	// defer conn.Close()
+	client, conn := Client()
+	defer conn.Close()
 
 	printFeature(client, &pb.Point{Latitude: 409146138, Longitude: -746188906})
 	printFeature(client, &pb.Point{Latitude: 0, Longitude: 0})
