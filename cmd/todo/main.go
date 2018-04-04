@@ -49,8 +49,6 @@ func (Todo) List(ctx context.Context, v *pb.Void) (*pb.TaskList, error) {
 	return list()
 }
 
-//go:generate protoc -I ../../ ../../grpc.proto --go_out=plugins=grpc:../../
-//go:generate mockgen -destination ../../mock_grpc/todo.go github.com/gertcuykens/grpc TodoServer,TodoClient
 func main() {
 	go Listen(&Todo{})
 	client := Client()

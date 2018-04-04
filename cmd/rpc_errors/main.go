@@ -61,7 +61,6 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
 }
 
-//go:generate protoc -I ../../ ../../grpc.proto --go_out=plugins=grpc:../../
 func main() {
 	go Listen(&server{count: make(map[string]int)})
 	client := Client()

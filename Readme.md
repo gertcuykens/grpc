@@ -1,7 +1,11 @@
+```go
 go generate ./...
 
 go test -v ./...
 
-cat data | protoc --decode_raw
+protoc --decode message grpc.proto < data.pbf > data.txt
 
-hexdump -c data
+protoc --decode_raw < data.pbf > data.txt
+
+hexdump -c data.pbf
+```

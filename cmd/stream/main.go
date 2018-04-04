@@ -71,8 +71,6 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
 }
 
-//go:generate protoc -I ../../ ../../grpc.proto --go_out=plugins=grpc:../../
-//go:generate mockgen -destination ../../mock_grpc/rg.go github.com/gertcuykens/grpc RouteGuideClient,RouteGuide_RouteChatClient
 func main() {
 	go Listen(newServer())
 	client, conn := Client()
