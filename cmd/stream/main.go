@@ -5,70 +5,40 @@ import (
 	"log"
 	"net"
 	"os"
-	"sync"
 
 	pb "github.com/gertcuykens/grpc"
 	"github.com/gertcuykens/tls"
-	"golang.org/x/net/context"
-	epb "google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/reflection"
 )
 
 func Listen(server pb.RouteGuideServer) {
-	creds, err := credentials.NewServerTLSFromFile(tls.Path("server.pem"), tls.Path("server-key.pem"))
+	creds, err := credentials.NewServerTLSFromFile(tls.CRT, tls.KEY)
 	if err != nil {
 		log.Fatalf("Failed to generate credentials %s", err)
 	}
 	srv := grpc.NewServer(grpc.Creds(creds))
 	pb.RegisterRouteGuideServer(srv, server)
-	l, err := net.Listen("tcp", ":8080")
+	reflection.Register(srv)
+	l, err := net.Listen("tcp", ":8444")
 	if err != nil {
-		log.Fatalf("could not listen to :8080 %s", err)
+		log.Fatalf("could not listen to :8444 %s", err)
 	}
 	log.Fatal(srv.Serve(l))
 }
 
 func Client() (pb.RouteGuideClient, *grpc.ClientConn) {
-	creds, err := credentials.NewClientTLSFromFile(tls.Path("ca.pem"), "localhost")
+	creds, err := credentials.NewClientTLSFromFile(tls.CA, "localhost")
 	if err != nil {
 		log.Fatalf("Failed to generate credentials %s", err)
 	}
-	conn, err := grpc.Dial(":8080", grpc.WithTransportCredentials(creds))
+	conn, err := grpc.Dial(":8444", grpc.WithTransportCredentials(creds))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "could not connect to backend: %s\n", err)
 		os.Exit(1)
 	}
 	return pb.NewRouteGuideClient(conn), conn
-}
-
-type server struct {
-	mu    sync.Mutex
-	count map[string]int
-}
-
-func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.count[in.Name]++
-	if s.count[in.Name] > 1 {
-		st := status.New(codes.ResourceExhausted, "Request limit exceeded.")
-		ds, err := st.WithDetails(
-			&epb.QuotaFailure{
-				Violations: []*epb.QuotaFailure_Violation{{
-					Subject:     fmt.Sprintf("name:%s", in.Name),
-					Description: "Limit one greeting per person",
-				}},
-			},
-		)
-		if err != nil {
-			return nil, st.Err()
-		}
-		return nil, ds.Err()
-	}
-	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
 }
 
 func main() {
