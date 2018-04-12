@@ -3,7 +3,9 @@ go generate ./...
 
 go test -v ./...
 
-protoc --decode message grpc.proto < data.pbf > data.txt
+protoc -I . grpc.proto --decode grpc.Message < data.pbf > data.txt
+
+protoc -I . grpc.proto --encode grpc.Message < data.txt > data.pbf
 
 protoc --decode_raw < data.pbf > data.txt
 
