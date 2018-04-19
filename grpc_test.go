@@ -14,6 +14,7 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	_ "google.golang.org/grpc/encoding/gzip"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -37,7 +38,7 @@ func Client2(t *testing.T) (pb.TlsClient, *grpc.ClientConn) {
 	if err != nil {
 		t.Fatalf("Failed to generate credentials %s", err)
 	}
-	conn, err := grpc.Dial(":8080", grpc.WithTransportCredentials(creds))
+	conn, err := grpc.Dial(":8080", grpc.WithTransportCredentials(creds), grpc.WithDefaultCallOptions(grpc.UseCompressor("gzip")))
 	if err != nil {
 		t.Fatalf("could not connect to backend: %s\n", err)
 	}
@@ -68,7 +69,7 @@ func Client1(t *testing.T) (pb.TlsClient, *grpc.ClientConn) {
 	if err != nil {
 		t.Fatalf("Failed to generate credentials %s", err)
 	}
-	conn, err := grpc.Dial(":https", grpc.WithTransportCredentials(creds))
+	conn, err := grpc.Dial(":https", grpc.WithTransportCredentials(creds), grpc.WithDefaultCallOptions(grpc.UseCompressor("gzip")))
 	if err != nil {
 		t.Fatalf("could not connect to backend: %s\n", err)
 	}
