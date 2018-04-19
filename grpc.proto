@@ -36,13 +36,6 @@ service Greeter {
 
 ////////////////////////////////////////////////////////////////
 
-service RouteGuide {
-    rpc GetFeature(Point) returns (Feature) {}
-    rpc ListFeatures(Rectangle) returns (stream Feature) {}
-    rpc RecordRoute(stream Point) returns (RouteSummary) {}
-    rpc RouteChat(stream RouteNote) returns (stream RouteNote) {}
-}
-
 message Point {
     int32 latitude = 1;
     int32 longitude = 2;
@@ -68,4 +61,21 @@ message RouteSummary {
     int32 feature_count = 2;
     int32 distance = 3;
     int32 elapsed_time = 4;
+}
+
+service RouteGuide {
+    rpc GetFeature(Point) returns (Feature) {}
+    rpc ListFeatures(Rectangle) returns (stream Feature) {}
+    rpc RecordRoute(stream Point) returns (RouteSummary) {}
+    rpc RouteChat(stream RouteNote) returns (stream RouteNote) {}
+}
+
+////////////////////////////////////////////////////////////////
+
+message Err {
+    string Msg = 1;
+}
+
+service Tls {
+    rpc Test (Err) returns (Err) {}
 }

@@ -12,7 +12,7 @@ import (
 	"time"
 
 	pb "github.com/gertcuykens/grpc"
-	"github.com/golang/protobuf/proto"
+	"github.com/gogo/protobuf/proto"
 	"golang.org/x/net/context"
 )
 
