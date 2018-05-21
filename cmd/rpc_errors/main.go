@@ -12,6 +12,7 @@ import (
 	epb "google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -40,6 +41,15 @@ type server struct {
 }
 
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		log.Printf("meta: %v", md)
+	}
+
+	header := metadata.Pairs("Authorization", "Bearer <token server header>")
+	grpc.SendHeader(ctx, header)
+	trailer := metadata.Pairs("Authorization", "Bearer <token server trailer>")
+	grpc.SetTrailer(ctx, trailer)
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.count[in.Name]++
@@ -63,9 +73,11 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 
 func main() {
 	go Listen(&server{count: make(map[string]int)})
+	ctx := metadata.AppendToOutgoingContext(context.Background(), "Authorization", "Bearer <token client>")
+	var header, trailer metadata.MD
 	client := Client()
 	for {
-		r, err := client.SayHello(context.Background(), &pb.HelloRequest{Name: "world"})
+		r, err := client.SayHello(ctx, &pb.HelloRequest{Name: "world"}, grpc.Header(&header), grpc.Trailer(&trailer))
 		if err != nil {
 			s := status.Convert(err)
 			for _, d := range s.Details() {
@@ -79,5 +91,7 @@ func main() {
 			os.Exit(1)
 		}
 		log.Printf("Greeting: %s", r.Message)
+		log.Printf("Header: %s", header.Get("Authorization"))
+		log.Printf("Trailer: %s", trailer.Get("Authorization"))
 	}
 }
