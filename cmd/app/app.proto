@@ -1,0 +1,12 @@
+syntax = "proto3";
+// option go_package = "github.com/gertcuykens/grpc";
+
+package main;
+
+message Err {
+    string Msg = 1;
+}
+
+service App {
+    rpc Test (Err) returns (Err) {}
+}

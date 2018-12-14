@@ -1,4 +1,7 @@
-```go
+https://github.com/protocolbuffers/protobuf/releases
+
+go get -u github.com/golang/protobuf/protoc-gen-go
+
 go generate ./...
 
 go test -v ./...
@@ -11,13 +14,12 @@ protoc -I . grpc.proto --encode grpc.Message < data.txt > data.pbf
 
 protoc --decode_raw < data.pbf > data.txt
 
-grpcurl -cacert /Users/gert/go/src/github.com/gertcuykens/tls/ca.crt localhost:8444 list grpc.RouteGuide
+grpcurl -cacert /etc/ssl/certs/ca.pem localhost:8444 list main.RouteGuide
 
-grpcurl -cacert /Users/gert/go/src/github.com/gertcuykens/tls/ca.crt localhost:8444 describe grpc.RouteGuide.ListFeatures
+grpcurl -cacert /etc/ssl/certs/ca.pem localhost:8444 describe main.RouteGuide.ListFeatures
 
-grpcurl -cacert /Users/gert/go/src/github.com/gertcuykens/tls/ca.crt -msg-template localhost:8444 describe grpc.Rectangle
+grpcurl -cacert /etc/ssl/certs/ca.pem -msg-template localhost:8444 describe main.Rectangle
 
-cat msg.json | grpcurl -cacert /Users/gert/go/src/github.com/gertcuykens/tls/ca.crt -d @ localhost:8444 grpc.RouteGuide.ListFeatures
+cat msg.json | grpcurl -cacert /etc/ssl/certs/ca.pem -d @ localhost:8444 main.RouteGuide.ListFeatures
 
-grpcurl -protoset grpc.protoset list grpc.RouteGuide
-```
+grpcurl -protoset stream.protoset list main.RouteGuide

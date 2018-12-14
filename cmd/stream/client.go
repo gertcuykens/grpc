@@ -1,17 +1,15 @@
 package main
 
 import (
+	"context"
 	"io"
 	"log"
 	"math/rand"
 	"time"
-
-	pb "github.com/gertcuykens/grpc"
-	"golang.org/x/net/context"
 )
 
 // printFeature gets the feature for the given point.
-func printFeature(client pb.RouteGuideClient, point *pb.Point) {
+func printFeature(client RouteGuideClient, point *Point) {
 	log.Printf("Getting feature for point (%d, %d)", point.Latitude, point.Longitude)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -23,7 +21,7 @@ func printFeature(client pb.RouteGuideClient, point *pb.Point) {
 }
 
 // printFeatures lists all the features within the given bounding Rectangle.
-func printFeatures(client pb.RouteGuideClient, rect *pb.Rectangle) {
+func printFeatures(client RouteGuideClient, rect *Rectangle) {
 	log.Printf("Looking for features within %v", rect)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -44,11 +42,11 @@ func printFeatures(client pb.RouteGuideClient, rect *pb.Rectangle) {
 }
 
 // runRecordRoute sends a sequence of points to server and expects to get a RouteSummary from server.
-func runRecordRoute(client pb.RouteGuideClient) {
+func runRecordRoute(client RouteGuideClient) {
 	// Create a random number of random points
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	pointCount := int(r.Int31n(100)) + 2 // Traverse at least two points
-	var points []*pb.Point
+	var points []*Point
 	for i := 0; i < pointCount; i++ {
 		points = append(points, randomPoint(r))
 	}
@@ -72,14 +70,14 @@ func runRecordRoute(client pb.RouteGuideClient) {
 }
 
 // runRouteChat receives a sequence of route notes, while sending notes for various locations.
-func runRouteChat(client pb.RouteGuideClient) {
-	notes := []*pb.RouteNote{
-		{Location: &pb.Point{Latitude: 0, Longitude: 1}, Message: "First message"},
-		{Location: &pb.Point{Latitude: 0, Longitude: 2}, Message: "Second message"},
-		{Location: &pb.Point{Latitude: 0, Longitude: 3}, Message: "Third message"},
-		{Location: &pb.Point{Latitude: 0, Longitude: 1}, Message: "Fourth message"},
-		{Location: &pb.Point{Latitude: 0, Longitude: 2}, Message: "Fifth message"},
-		{Location: &pb.Point{Latitude: 0, Longitude: 3}, Message: "Sixth message"},
+func runRouteChat(client RouteGuideClient) {
+	notes := []*RouteNote{
+		{Location: &Point{Latitude: 0, Longitude: 1}, Message: "First message"},
+		{Location: &Point{Latitude: 0, Longitude: 2}, Message: "Second message"},
+		{Location: &Point{Latitude: 0, Longitude: 3}, Message: "Third message"},
+		{Location: &Point{Latitude: 0, Longitude: 1}, Message: "Fourth message"},
+		{Location: &Point{Latitude: 0, Longitude: 2}, Message: "Fifth message"},
+		{Location: &Point{Latitude: 0, Longitude: 3}, Message: "Sixth message"},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -111,8 +109,8 @@ func runRouteChat(client pb.RouteGuideClient) {
 	<-waitc
 }
 
-func randomPoint(r *rand.Rand) *pb.Point {
+func randomPoint(r *rand.Rand) *Point {
 	lat := (r.Int31n(180) - 90) * 1e7
 	long := (r.Int31n(360) - 180) * 1e7
-	return &pb.Point{Latitude: lat, Longitude: long}
+	return &Point{Latitude: lat, Longitude: long}
 }

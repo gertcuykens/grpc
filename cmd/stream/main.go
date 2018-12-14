@@ -6,20 +6,18 @@ import (
 	"net"
 	"os"
 
-	pb "github.com/gertcuykens/grpc"
-	"github.com/gertcuykens/tls"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 )
 
-func Listen(server pb.RouteGuideServer) {
-	creds, err := credentials.NewServerTLSFromFile(tls.CRT, tls.KEY)
+func Listen(server RouteGuideServer) {
+	creds, err := credentials.NewServerTLSFromFile("/etc/ssl/certs/tls.pem", "/etc/ssl/private/tls-key.pem")
 	if err != nil {
 		log.Fatalf("Failed to generate credentials %s", err)
 	}
 	srv := grpc.NewServer(grpc.Creds(creds))
-	pb.RegisterRouteGuideServer(srv, server)
+	RegisterRouteGuideServer(srv, server)
 	reflection.Register(srv)
 	l, err := net.Listen("tcp", ":8444")
 	if err != nil {
@@ -28,8 +26,8 @@ func Listen(server pb.RouteGuideServer) {
 	log.Fatal(srv.Serve(l))
 }
 
-func Client() (pb.RouteGuideClient, *grpc.ClientConn) {
-	creds, err := credentials.NewClientTLSFromFile(tls.CA, "localhost")
+func Client() (RouteGuideClient, *grpc.ClientConn) {
+	creds, err := credentials.NewClientTLSFromFile("/etc/ssl/certs/ca.pem", "localhost")
 	if err != nil {
 		log.Fatalf("Failed to generate credentials %s", err)
 	}
@@ -38,19 +36,22 @@ func Client() (pb.RouteGuideClient, *grpc.ClientConn) {
 		fmt.Fprintf(os.Stderr, "could not connect to backend: %s\n", err)
 		os.Exit(1)
 	}
-	return pb.NewRouteGuideClient(conn), conn
+	return NewRouteGuideClient(conn), conn
 }
 
+//go:generate protoc -I . stream.proto --go_out=plugins=grpc:.
+//go:generate protoc -I . stream.proto --descriptor_set_out=stream.protoset --include_imports
+//go:generate mockgen -destination stream_mock/stream.go -source=stream.pb.go -package=stream_mock
 func main() {
 	go Listen(newServer())
 	client, conn := Client()
 	defer conn.Close()
 
-	printFeature(client, &pb.Point{Latitude: 409146138, Longitude: -746188906})
-	printFeature(client, &pb.Point{Latitude: 0, Longitude: 0})
-	printFeatures(client, &pb.Rectangle{
-		Lo: &pb.Point{Latitude: 400000000, Longitude: -750000000},
-		Hi: &pb.Point{Latitude: 420000000, Longitude: -730000000},
+	printFeature(client, &Point{Latitude: 409146138, Longitude: -746188906})
+	printFeature(client, &Point{Latitude: 0, Longitude: 0})
+	printFeatures(client, &Rectangle{
+		Lo: &Point{Latitude: 400000000, Longitude: -750000000},
+		Hi: &Point{Latitude: 420000000, Longitude: -730000000},
 	})
 
 	runRecordRoute(client)
