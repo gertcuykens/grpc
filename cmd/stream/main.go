@@ -41,7 +41,7 @@ func Client() (RouteGuideClient, *grpc.ClientConn) {
 
 //go:generate protoc -I . stream.proto --go_out=plugins=grpc:.
 //go:generate protoc -I . stream.proto --descriptor_set_out=stream.protoset --include_imports
-//go:generate mockgen -destination stream_mock/stream.go -source=stream.pb.go -package=stream_mock
+//go:generate mockgen -destination stream.pb_test.go -source=stream.pb.go -package=main
 func main() {
 	go Listen(newServer())
 	client, conn := Client()

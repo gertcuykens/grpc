@@ -72,7 +72,7 @@ func (s *server) SayHello(ctx context.Context, in *HelloRequest) (*HelloReply, e
 
 //go:generate protoc -I . rpc_errors.proto --go_out=plugins=grpc:.
 //go:generate protoc -I . rpc_errors.proto --descriptor_set_out=rpc_errors.protoset --include_imports
-//go:generate mockgen -destination rpc_errors_mock/rpc_errors.go -source=rpc_errors.pb.go -package=rpc_errors_mock
+//go:generate mockgen -destination rpc_errors.pb_test.go -source=rpc_errors.pb.go -package=main
 func main() {
 	go Listen(&server{count: make(map[string]int)})
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "Authorization", "Bearer <token client>")

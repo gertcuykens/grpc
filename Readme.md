@@ -2,10 +2,6 @@ https://github.com/protocolbuffers/protobuf/releases
 
 go get -u github.com/golang/protobuf/protoc-gen-go
 
-go generate ./...
-
-go test -v ./...
-
 hexdump -c data.pbf
 
 protoc -I . grpc.proto --decode grpc.Message < data.pbf > data.txt

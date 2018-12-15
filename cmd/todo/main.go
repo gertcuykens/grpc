@@ -50,7 +50,7 @@ func (Todo) List(ctx context.Context, v *Void) (*TaskList, error) {
 
 //go:generate protoc -I . todo.proto --go_out=plugins=grpc:.
 //go:generate protoc -I . todo.proto --descriptor_set_out=todo.protoset --include_imports
-//go:generate mockgen -destination todo_mock/todo.go -source=todo.pb.go -package=todo_mock
+//go:generate mockgen -destination todo.pb_test.go -source=todo.pb.go -package=main
 func main() {
 	go Listen(&Todo{})
 	client := Client()
